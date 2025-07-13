@@ -69,7 +69,7 @@ func (s *Server) getCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, e
 
 	host := strings.Split(hello.ServerName, ".")[0]
 	for _, token := range strings.Split(host, "-") {
-		if token == "" {
+		if token == "" || token == "none" {
 			continue
 		}
 		ctlog, err := s.GetLog(ctx, token)
@@ -102,7 +102,7 @@ func (s *Server) Serve(l net.Listener) error {
 		host := strings.Split(strings.Split(r.Host, ":")[0], ".")[0]
 		var logs []*loglist.Log
 		for _, token := range strings.Split(host, "-") {
-			if token == "" {
+			if token == "" || token == "none" {
 				continue
 			}
 			ctlog, err := s.GetLog(ctx, token)
