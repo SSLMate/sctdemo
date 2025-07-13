@@ -47,7 +47,7 @@ import (
 
 func main() {
 	certFile := flag.String("cert", "", "path to PEM file containing wildcard certificate, chain, and private key")
-	logListFile := flag.String("loglist", "", "path to JSON log list file")
+	logListFile := flag.String("loglist", "https://www.gstatic.com/ct/log_list/v3/all_logs_list.json", "path or HTTPS URL to JSON log list")
 	listenerSpec := flag.String("listen", "", "where to listen, in go-listener syntax (https://pkg.go.dev/src.agwa.name/go-listener#readme-listener-syntax)")
 	flag.Parse()
 
@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	list, err := loglist.ReadFile(*logListFile)
+	list, err := loglist.Load(context.Background(), *logListFile)
 	if err != nil {
 		log.Fatalf("error loading log list: %v", err)
 	}
