@@ -2,7 +2,10 @@ module software.sslmate.com/src/sctdemo
 
 go 1.24.5
 
-require software.sslmate.com/src/certspotter v0.21.1-0.20250713160610-61fac0199a61
+require (
+	software.sslmate.com/src/certspotter v0.21.1-0.20250713160610-61fac0199a61
+	src.agwa.name/go-listener v0.7.0
+)
 
 require (
 	golang.org/x/crypto v0.40.0 // indirect

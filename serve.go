@@ -2,8 +2,14 @@ package sctdemo
 
 import (
 	"context"
-	"crypto/tls"
 	"crypto/sha256"
+	"crypto/tls"
+	"fmt"
+	"html"
+	"net"
+	"net/http"
+	"strings"
+	"time"
 
 	"software.sslmate.com/src/certspotter/cttypes"
 	"software.sslmate.com/src/certspotter/loglist"
@@ -26,16 +32,61 @@ func (s *Server) GetCertificateWithSCTs(hello *tls.ClientHelloInfo) (*tls.Certif
 	newCert := new(tls.Certificate)
 	*newCert = *cert
 
-	// TODO: take the first component of hello.ServerName and split it on hyphens. Each token represents a log name.  For each log name, pass it to GetLog to get the log. Then obtain an SCT for it, first by checking the cache (by passing fingerprint and the log ID to GetCachedSCT). If that returns nil, then submit the certificate chain (cert.Certificate) using addChain() and then cache the result by calling CacheSCT.  Append the SCT to newCert.SignedCertificateTimestamps
+	host := strings.Split(hello.ServerName, ".")[0]
+	for _, token := range strings.Split(host, "-") {
+		if token == "" {
+			continue
+		}
+		ctlog, err := s.GetLog(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+		sct, err := s.GetCachedSCT(ctx, fingerprint, ctlog.LogID)
+		if err != nil {
+			return nil, err
+		}
+		if sct == nil {
+			sct, err = addChain(ctx, ctlog, cert.Certificate)
+			if err != nil {
+				return nil, err
+			}
+			if err := s.CacheSCT(ctx, fingerprint, ctlog.LogID, sct); err != nil {
+				return nil, err
+			}
+		}
+		newCert.SignedCertificateTimestamps = append(newCert.SignedCertificateTimestamps, sct)
+	}
 
 	return newCert, nil
 }
 
 func (s *Server) Serve(l net.Listener) error {
-	// TODO: add a handler that looks at the first component of server name, splits it, calls GetLog on each token (just like GetCertificateWithSCTs) and then return a simple page saying "This TLS handshake includes SCTs from:" followed by a list of log descriptions
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		host := strings.Split(strings.Split(r.Host, ":")[0], ".")[0]
+		var logs []*loglist.Log
+		for _, token := range strings.Split(host, "-") {
+			if token == "" {
+				continue
+			}
+			ctlog, err := s.GetLog(ctx, token)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			logs = append(logs, ctlog)
+		}
+		fmt.Fprint(w, "<html><body>This TLS handshake includes SCTs from:<ul>")
+		for _, log := range logs {
+			fmt.Fprintf(w, "<li>%s</li>", html.EscapeString(log.Description))
+		}
+		fmt.Fprint(w, "</ul></body></html>")
+	})
+
 	hs := &http.Server{
-		ReadTimeout: 10*time.Second,
-		WriteTimeout: 10*time.Second,
+		Handler:      handler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 	return hs.Serve(tls.NewListener(l, &tls.Config{
 		GetCertificate: s.GetCertificateWithSCTs,
