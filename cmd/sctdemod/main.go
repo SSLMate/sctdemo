@@ -14,6 +14,7 @@ import (
 	"src.agwa.name/go-listener"
 	listenercert "src.agwa.name/go-listener/cert"
 
+	"software.sslmate.com/src/certspotter/ctclient"
 	"software.sslmate.com/src/certspotter/cttypes"
 	"software.sslmate.com/src/certspotter/loglist"
 	"software.sslmate.com/src/sctdemo"
@@ -35,7 +36,7 @@ func main() {
 		log.Fatalf("error loading log list: %v", err)
 	}
 
-	srv := &sctdemo.Server{}
+	srv := &sctdemo.Server{HTTPClient: ctclient.NewHTTPClient(nil)}
 
 	certFunc := listenercert.GetCertificateFromFile(*certFile)
 	srv.GetCertificate = func(ctx context.Context, hello *tls.ClientHelloInfo) (*tls.Certificate, error) {

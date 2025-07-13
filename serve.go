@@ -23,13 +23,6 @@ type Server struct {
 	GetCachedSCT   func(context.Context, [32]byte, cttypes.LogID) ([]byte, error)
 }
 
-func (s *Server) httpClient() *http.Client {
-	if s.HTTPClient != nil {
-		return s.HTTPClient
-	}
-	return http.DefaultClient
-}
-
 func (s *Server) GetCertificateWithSCTs(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	ctx := hello.Context()
 	cert, err := s.GetCertificate(ctx, hello)
@@ -54,7 +47,7 @@ func (s *Server) GetCertificateWithSCTs(hello *tls.ClientHelloInfo) (*tls.Certif
 			return nil, err
 		}
 		if sct == nil {
-			sct, err = addChain(ctx, s.httpClient(), ctlog, cert.Certificate)
+			sct, err = addChain(ctx, s.HTTPClient, ctlog, cert.Certificate)
 			if err != nil {
 				return nil, err
 			}
