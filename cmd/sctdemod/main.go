@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"sync"
 
@@ -26,7 +27,7 @@ func main() {
 
 	if *certFile == "" || *logListFile == "" || *listenerSpec == "" {
 		flag.Usage()
-		return
+		os.Exit(1)
 	}
 
 	list, err := loglist.ReadFile(*logListFile)
