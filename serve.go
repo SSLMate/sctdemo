@@ -90,6 +90,7 @@ func (s *Server) Serve(l net.Listener) error {
 		WriteTimeout: 10 * time.Second,
 	}
 	return hs.Serve(tls.NewListener(l, &tls.Config{
+		NextProtos:     []string{"h2", "http/1.1"},
 		GetCertificate: s.GetCertificateWithSCTs,
 	}))
 }
