@@ -1,3 +1,28 @@
+// Copyright (C) 2025 Opsmate, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+//
+// Except as contained in this notice, the name(s) of the above copyright
+// holders shall not be used in advertising or otherwise to promote the
+// sale, use or other dealings in this Software without prior written
+// authorization.
+
 package sctdemo
 
 import (
@@ -16,14 +41,23 @@ import (
 )
 
 type Server struct {
-	HTTPClient     *http.Client
+	// HTTPClient is used for submitting certificates to logs
+	HTTPClient *http.Client
+
+	// GetCertificate returns the certificate (without SCTs) to present to the client
 	GetCertificate func(context.Context, *tls.ClientHelloInfo) (*tls.Certificate, error)
-	GetLog         func(context.Context, string) (*loglist.Log, error)
-	CacheSCT       func(context.Context, [32]byte, cttypes.LogID, []byte) error
-	GetCachedSCT   func(context.Context, [32]byte, cttypes.LogID) ([]byte, error)
+
+	// GetLog looks up a log by the identifier that was presented in the server name
+	GetLog func(context.Context, string) (*loglist.Log, error)
+
+	// Cache an SCT for the given certificate fingerprint from the given log
+	CacheSCT func(context.Context, [32]byte, cttypes.LogID, []byte) error
+
+	// Return a cached SCT (or nil if not cached) for the given certificate fingerprint from the given log
+	GetCachedSCT func(context.Context, [32]byte, cttypes.LogID) ([]byte, error)
 }
 
-func (s *Server) GetCertificateWithSCTs(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func (s *Server) getCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	ctx := hello.Context()
 	cert, err := s.GetCertificate(ctx, hello)
 	if err != nil {
@@ -61,6 +95,7 @@ func (s *Server) GetCertificateWithSCTs(hello *tls.ClientHelloInfo) (*tls.Certif
 	return newCert, nil
 }
 
+// Serve accepts and serves HTTPS connections on l
 func (s *Server) Serve(l net.Listener) error {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -91,6 +126,6 @@ func (s *Server) Serve(l net.Listener) error {
 	}
 	return hs.Serve(tls.NewListener(l, &tls.Config{
 		NextProtos:     []string{"h2", "http/1.1"},
-		GetCertificate: s.GetCertificateWithSCTs,
+		GetCertificate: s.getCertificate,
 	}))
 }
