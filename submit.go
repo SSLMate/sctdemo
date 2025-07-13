@@ -14,7 +14,7 @@ import (
 	"software.sslmate.com/src/certspotter/loglist"
 )
 
-func addChain(ctx context.Context, ctlog *loglist.Log, chain [][]byte) ([]byte, error) {
+func addChain(ctx context.Context, httpClient *http.Client, ctlog *loglist.Log, chain [][]byte) ([]byte, error) {
 	fullURL, err := url.JoinPath(ctlog.GetSubmissionURL(), "/ct/v1/add-chain")
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func addChain(ctx context.Context, ctlog *loglist.Log, chain [][]byte) ([]byte, 
 	request.Header.Set("User-Agent", "sctdemo")
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err := http.DefaultClient.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
