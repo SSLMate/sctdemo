@@ -10,7 +10,7 @@
 
 The first component of the server name is a hyphen-separated list of numeric log identifiers. When the SCT demo server handles a TLS connection, it obtains SCTs for its certificate (which has no embedded SCTs) from the specified logs, and sends them to the client in the TLS handshake extension. This can be used for testing CT policy enforcement in clients.
 
-For a list of numeric log identifiers, see the ID column of <https://sslmate.com/app/ctlogs>.  Note that you can only use logs which will accept a trusted TLS certificate expiring on **2026-08-11**; other logs will refuse to accept the demo server's certificate.
+For a list of numeric log identifiers, see the ID column of <https://sslmate.com/app/ctlogs>.  Note that you can only use logs which will accept a trusted TLS certificate expiring on **2026-08-11**; other logs will reject the demo server's certificate.
 
 ## Running It Yourself
 
