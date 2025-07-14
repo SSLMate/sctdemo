@@ -1,9 +1,12 @@
 # SCT Demo Server
 
-* https://none.sct-demo.sslmate.net serves no SCTs (in the certificate, OCSP response, or TLS extension) (this should fail in CT-enforcing user agents)
-* https://26900004.sct-demo.sslmate.net serves SCTs from Google Argon 2026h2 in the TLS extension (this should fail in CT-enforcing user agents)
-* https://26900004-26900006.sct-demo.sslmate.net serves SCTs from Google Argon 2026h2 and Let's Encrypt Oak 2026h2 in the TLS extension
-* https://26900004-26900006-26900015.sct-demo.sslmate.net serves SCTs from Google Argon 2026h2, Let's Encrypt Oak 2026h2, and Sectigo Elephant 2026h2 in the TLS extension
+* https://none.sct-demo.sslmate.net serves **no SCTs** (in the certificate, OCSP response, or TLS extension) (this should fail in CT-enforcing user agents)
+
+* https://26900004.sct-demo.sslmate.net serves SCTs from **Google Argon 2026h2** in the TLS extension (this should fail in CT-enforcing user agents)
+
+* https://26900004-26900006.sct-demo.sslmate.net serves SCTs from **Google Argon 2026h2** and **Let's Encrypt Oak 2026h2** in the TLS extension
+
+* https://26900004-26900006-26900015.sct-demo.sslmate.net serves SCTs from **Google Argon 2026h2**, **Let's Encrypt Oak 2026h2**, and **Sectigo Elephant 2026h2** in the TLS extension
 
 The first component of the server name is a hyphen-separated list of numeric log identifiers. When the SCT demo server handles a TLS connection, it obtains SCTs for its certificate (which has no embedded SCTs) from the specified logs, and sends them to the client in the TLS handshake extension. This can be used for testing CT policy enforcement in clients.
 
