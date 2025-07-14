@@ -50,10 +50,10 @@ type Server struct {
 	// GetLog looks up a log by the identifier that was presented in the server name
 	GetLog func(context.Context, string) (*loglist.Log, error)
 
-	// Cache an SCT for the given certificate fingerprint from the given log
+	// Cache an SCT for the given certificate fingerprint from the given log; the byte slice must not be modified after calling
 	CacheSCT func(context.Context, [32]byte, cttypes.LogID, []byte) error
 
-	// Return a cached SCT (or nil if not cached) for the given certificate fingerprint from the given log
+	// Return a cached SCT (or nil if not cached) for the given certificate fingerprint from the given log; the returned byte slice must not be modified
 	GetCachedSCT func(context.Context, [32]byte, cttypes.LogID) ([]byte, error)
 }
 

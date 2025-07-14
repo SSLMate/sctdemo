@@ -85,39 +85,24 @@ func main() {
 		return match, nil
 	}
 
-	cache := struct {
-		mu   sync.Mutex
-		data map[[32]byte]map[cttypes.LogID][]byte
-	}{data: make(map[[32]byte]map[cttypes.LogID][]byte)}
+	var cacheMu sync.Mutex
+	type cacheKey struct {
+		fp [32]byte
+		id cttypes.LogID
+	}
+	cache := make(map[cacheKey][]byte)
 
 	srv.CacheSCT = func(ctx context.Context, fp [32]byte, id cttypes.LogID, sct []byte) error {
-		cache.mu.Lock()
-		defer cache.mu.Unlock()
-		m, ok := cache.data[fp]
-		if !ok {
-			m = make(map[cttypes.LogID][]byte)
-			cache.data[fp] = m
-		}
-		cp := make([]byte, len(sct))
-		copy(cp, sct)
-		m[id] = cp
+		cacheMu.Lock()
+		defer cacheMu.Unlock()
+		cache[cacheKey{fp, id}] = sct
 		return nil
 	}
 
 	srv.GetCachedSCT = func(ctx context.Context, fp [32]byte, id cttypes.LogID) ([]byte, error) {
-		cache.mu.Lock()
-		defer cache.mu.Unlock()
-		m, ok := cache.data[fp]
-		if !ok {
-			return nil, nil
-		}
-		sct, ok := m[id]
-		if !ok {
-			return nil, nil
-		}
-		cp := make([]byte, len(sct))
-		copy(cp, sct)
-		return cp, nil
+		cacheMu.Lock()
+		defer cacheMu.Unlock()
+		return cache[cacheKey{fp, id}], nil
 	}
 
 	l, err := listener.Open(*listenerSpec)
