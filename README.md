@@ -24,13 +24,13 @@ go install software.sslmate.com/src/sctdemo/cmd/sctdemod@latest
 
 You need a wildcard certificate without embedded SCTs, which you can obtain from Amazon Web Services.
 
-To run sctdemod on port 443 with the certificate, run:
+To start sctdemod, listening on port 443 with your certificate, run:
 
 ```
 sctdemod -cert /path/to/cert_chain_and_key.pem -listen tcp:443
 ```
 
-Unlike the public instance, sctdemod uses a hex-encoded [key ID](https://www.rfc-editor.org/rfc/rfc6962#section-3.2) prefix as the log identifier.  For example, `0d1dbc89-dddcca34-ef9d0442.example.com` would serve SCTs from Sectigo Elephant 2025h2, Google Xenon 2025h2, and Geomys Tuscolo 2025h2. The prefix can be any length as long as it unambiguously identifies a log.
+After starting sctdemod, you can connect to it over TLS on port 443, and it will return a TLS handshake with SCTs from the logs specified in the first component of the server name you use to connect.  Unlike the public instance, sctdemod uses a hex-encoded [key ID](https://www.rfc-editor.org/rfc/rfc6962#section-3.2) prefix as the log identifier.  For example, `0d1dbc89-dddcca34-ef9d0442.example.com` would serve SCTs from Sectigo Elephant 2025h2, Google Xenon 2025h2, and Geomys Tuscolo 2025h2. The prefix can be any length as long as it unambiguously identifies a log.
 
 ### Usage
 
