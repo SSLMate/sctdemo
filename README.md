@@ -1,5 +1,8 @@
 # SCT Demo Server
 
+> [!WARNING]
+> The public demo server's certificate expired on **2026-08-11** and has not been renewed, because we don't know of any CAs that still offer certificates without embedded SCTs. (Amazon/DigiCert, which we previously used, no longer does.) As a result, the demo hostnames below will fail certificate validation. If you know of a CA offering SCT-less certificates, please let us know in [issue #1](https://github.com/SSLMate/sctdemo/issues/1).
+
 * https://none.sct-demo.sslmate.net serves **no SCTs** (in the certificate, OCSP response, or TLS extension) (this should fail in CT-enforcing user agents)
 
 * https://26900004.sct-demo.sslmate.net serves SCTs from **Google Argon 2026h2** in the TLS extension (this should fail in CT-enforcing user agents)
@@ -22,7 +25,7 @@ To install, run:
 go install software.sslmate.com/src/sctdemo/cmd/sctdemod@latest
 ```
 
-You need a wildcard certificate without embedded SCTs, which you can obtain from Amazon Web Services.
+You need a wildcard certificate without embedded SCTs. Amazon Web Services used to issue such certificates, but no longer does, and we don't currently know of any CA that does (see [issue #1](https://github.com/SSLMate/sctdemo/issues/1)).
 
 To start sctdemod, listening on port 443 with your certificate, run:
 
